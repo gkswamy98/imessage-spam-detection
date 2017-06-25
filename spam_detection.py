@@ -41,13 +41,14 @@ for pipeline in pipelines:
     y_pred = pipeline.predict(X_test)
     print(classification_report(y_test, y_pred, target_names=["ham", "spam"]))
 
-# Creating and saving an .mlmodel file
+# Creating and saving an .mlmodel file and a list of words
 vectorizer = TfidfVectorizer()
 vectorized = vectorizer.fit_transform(X)
+words = open('words_ordered.txt', 'w')
+for feature in vectorizer.get_feature_names():
+    words.write(feature.encode('utf-8') + '\n')
+words.close()
 model = LinearSVC()
 model.fit(vectorized, y)
-features = []
-for feature in vectorizer.get_feature_names():
-    features.append(feature.encode('utf-8'))
-coreml_model = coremltools.converters.sklearn.convert(model, features, 'label')
+coreml_model = coremltools.converters.sklearn.convert(model, "message", 'label')
 coreml_model.save('MessageClassifier.mlmodel')
